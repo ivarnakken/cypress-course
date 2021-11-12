@@ -23,3 +23,35 @@
 //
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
+
+
+Cypress.Commands.add('createIssue', (name, priority) => {
+    cy.visit('https://jira-clone.mad.itera.no/project/board');
+
+    cy.get('[data-testid="icon:plus"]').click(); 
+    
+    cy.get('[data-testid="modal:issue-create"]').within(() => {
+        
+        cy.get('input[name="title"]').type(name);
+        
+        cy.get('[data-testid="form-field:description"]').type('a sick description');
+
+        cy.get('[data-testid="select:userIds"]').click() 
+        .parent() 
+        .within(() => {
+            cy.contains('Pickle Rick').click();
+        }); 
+
+        cy.get('[data-testid="form-field:priority"]').click()
+        .within(() => {
+            cy.get('input[placeholder="Search"]').type(priority); // This is not actually needed ...
+            // cy.contains(priority).click(); I don't really like the us of this here
+            cy.get(`[data-testid="select-option:${priority}"]`).click(); 
+
+        });
+        
+        cy.get('button[type="submit"]').click();
+    });  
+    
+    cy.contains(name).should('be.visible'); 
+});
