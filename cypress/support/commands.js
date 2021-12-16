@@ -25,14 +25,14 @@
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 
 
-Cypress.Commands.add('createIssue', (name, priority) => {
+Cypress.Commands.add('createIssue', (title, priority) => {
     cy.visit('https://jira-clone.mad.itera.no/project/board');
 
     cy.get('[data-testid="icon:plus"]').click(); 
     
     cy.get('[data-testid="modal:issue-create"]').within(() => {
         
-        cy.get('input[name="title"]').type(name);
+        cy.get('input[name="title"]').type(title);
         
         cy.get('[data-testid="form-field:description"]').type('a sick description');
 
@@ -53,5 +53,52 @@ Cypress.Commands.add('createIssue', (name, priority) => {
         cy.get('button[type="submit"]').click();
     });  
     
-    cy.contains(name).should('be.visible'); 
+    cy.contains(title).should('be.visible'); 
+});
+
+
+Cypress.Commands.add('deleteIssue', (title) => {
+    cy.visit('https://jira-clone.mad.itera.no/project/board');
+
+    cy.contains(title).click(); 
+    
+    cy.get('[data-testid="icon:trash"]').click();    
+    
+    cy.contains('Delete issue').click();
+
+    cy.contains(title).should('not.be.visible');
+});
+
+
+Cypress.Commands.add('createComment', (text, title) => { 
+    cy.visit('https://jira-clone.mad.itera.no/project/board');
+
+    cy.get(title).click().within(() => {
+        cy.get('body').type('{m}') // 'm' can be pressed to comment
+        .type(text);
+
+        cy.contains(text).should('be.visible');
+    });
+});
+
+Cypress.Commands.add('deleteComment', (text, title) => {
+    cy.visit('https://jira-clone.mad.itera.no/project/board');
+
+    cy.contains(title).click().within(() => {
+        cy.contains(text).parent().contains('Delete').click();
+        cy.contains('Delete comment').click();
+        cy.contains(text).should('not.be.visible');
+    });
+
+});
+
+Cypress.Commands.add('editComment', (text, newText, title) => {
+    cy.visit('https://jira-clone.mad.itera.no/project/board');
+
+    cy.contains(title).click().within(() => {
+        cy.contains(text).parent().contains('Edit').click();
+        cy.contains(text).clear().type(newText);
+        cy.contains('Save').click();
+        cy.contains(text).should('not.be.visible');
+    });
 });
